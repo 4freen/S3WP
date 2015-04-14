@@ -1,7 +1,6 @@
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -13,14 +12,11 @@ import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.CoreTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.Tokenizer;
-import edu.smu.tspell.wordnet.NounSynset;
 import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.SynsetType;
-import edu.smu.tspell.wordnet.WordNetDatabase;
-
+import org.apache.http.client.utils.URIBuilder;
 import org.json.*;
 
 
@@ -63,11 +59,13 @@ class MainClass {
 	public static void main(String[] args) throws URISyntaxException, IOException, JSONException { 
     	
     	//WordNet api
+		
+		System.setProperty("wordnet.database.dir", "/Users/Afreen/Downloads/WordNet-3.0/dict");
     	NounSynset nounSynset; //synonyms
 			
 		WordNetDatabase database = WordNetDatabase.getFileInstance(); 
 
-        String str = "What is the water pollution in California in 31/12/2015?";
+        String str = "What is the water pollution in California in 31/12/2009?";
         URL locUrl;
         String time;
         String[] timestamp;
@@ -133,10 +131,10 @@ class MainClass {
         //Wordnet API 
         for(Tree leaf : leaves) {
             Tree parent = leaf.parent(tree);
-    		//Synset[] synsets = database.getSynsets(leaf.label().value(), SynsetType.NOUN); 
-    		//	for (int i = 0; i < synsets.length; i++) { 
-    				// nounSynset = (NounSynset)(synsets[i]); 
-    				// System.err.println(nounSynset.getWordForms()[0] +  ": " + nounSynset.getDefinition());
+    		Synset[] synsets = database.getSynsets(leaf.label().value(), SynsetType.NOUN); 
+    			for (int i = 0; i < synsets.length; i++) { 
+    				 nounSynset = (NounSynset)(synsets[i]); 
+    				 System.err.println(nounSynset.getWordForms()[0] +  ": " + nounSynset.getDefinition());
     				
     				//check if month is given in words
     				if(parent.label().value().equals("NNP")) {
@@ -155,7 +153,7 @@ class MainClass {
     					}
     						
     				}
-    			//}
+    			}
         }
         
         //TEST point to check if condition, location and time have been correctly set
@@ -175,6 +173,7 @@ class MainClass {
         //extract the bounding box of the location from JSON string
         String bbStr = JsonParser.getBBox(locJsonStr);
         
+        UriBuilderClass.buildDataUrl(bbStr, sday, smonth, syear, condition);
         
     }
 }
